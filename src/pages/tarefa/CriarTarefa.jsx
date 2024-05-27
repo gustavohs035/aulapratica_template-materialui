@@ -9,8 +9,8 @@ import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 import Button from '@mui/material/Button';
 
-//Declaração do componente CriarTarefa, recebendo como props, do Componente ListarTarefa, os states handClose, tarefas e setTarefas
-const CriarTarefa = ({handleClose, tarefas, setTarefas}) =>{
+// Declaração do componente CriarTarefa, recebendo como props, do Componente ListarTarefa, os states handClose, tarefas e setTarefas
+const CriarTarefa = ({handleClose, tarefas, setTarefas}) => {
   const [idTarefa, setIdTarefa] = useState();
   const [tituloTarefa, setTituloTarefa] = useState('');
   const [descricaoTarefa, setDescricaoTarefa] = useState('');
@@ -19,11 +19,13 @@ const CriarTarefa = ({handleClose, tarefas, setTarefas}) =>{
   const [recursoTarefa, setRecursoTarefa] = useState('');
   const [statusTarefa, setStatusTarefa] = useState('');
   
+  const [erros, setErros] = useState({});
+
   useEffect(() => {
-    //Abaixo uma variável é declarada para armazenar o id da tarefa, somando 1 ao maior id existente atualmente no state Tarefas
+    // Abaixo uma variável é declarada para armazenar o id da tarefa, somando 1 ao maior id existente atualmente no state Tarefas
     let proximoId = Math.max(...tarefas.map(tarefa => tarefa.idTarefa)) + 1;
     setIdTarefa(proximoId);
-  },[]);
+  }, []);
 
   const handleRecurso = (event) => {
     setRecursoTarefa(event.target.value);
@@ -34,8 +36,19 @@ const CriarTarefa = ({handleClose, tarefas, setTarefas}) =>{
   };
 
   const handleSalvar = () => {
-    //Para inspecionarmos nosso código, uma boa estratégia é utilizarmos o console.log.
-    //  Com o console.log, podemos visualizar o seu conteúdo na aba Console, no inspecionador de elementos, na janela do navegador
+    // Validação dos campos obrigatórios
+    const novosErros = {};
+    if (!tituloTarefa) novosErros.tituloTarefa = 'O título é obrigatório';
+    if (!descricaoTarefa) novosErros.descricaoTarefa = 'A descrição é obrigatória';
+    if (!statusTarefa) novosErros.statusTarefa = 'O status é obrigatório';
+
+    if (Object.keys(novosErros).length > 0) {
+      setErros(novosErros);
+      return;
+    }
+
+    // Para inspecionarmos nosso código, uma boa estratégia é utilizarmos o console.log.
+    // Com o console.log, podemos visualizar o seu conteúdo na aba Console, no inspecionador de elementos, na janela do navegador
     console.log(`id: ${idTarefa} \n titulo: ${tituloTarefa} \n descrição: ${descricaoTarefa} \n inicio: ${inicioTarefa} \n fim: ${fimTarefa} \n recurso: ${recursoTarefa} \n status: ${statusTarefa}`);
 
     setTarefas(
@@ -50,11 +63,11 @@ const CriarTarefa = ({handleClose, tarefas, setTarefas}) =>{
           statusTarefa
         }
       ]);
-    //console.log(`Tarefas: ` + JSON.stringify(tarefas));
+    // console.log(`Tarefas: ` + JSON.stringify(tarefas));
     handleClose();
   };
 
-  return(
+  return (
     <Grid container spacing={2}>
       <Card sx={style}>
         <CardHeader
@@ -66,15 +79,17 @@ const CriarTarefa = ({handleClose, tarefas, setTarefas}) =>{
           maxWidth: '100%',
         }}>
           <Grid item xs={12}>
-            <FormControl fullWidth>
-              <Input id="tarefa_titulo" aria-describedby="tarefa_titulo_helper_text" value={tituloTarefa} onChange={e => { setTituloTarefa(e.target.value) }} />
-              <FormHelperText id="tarefa_titulo_helper_text">Título da Tarefa.</FormHelperText>
+            <FormControl fullWidth required error={!!erros.tituloTarefa}>
+              <InputLabel htmlFor="tarefa_titulo">Título</InputLabel>
+              <Input id="tarefa_titulo" aria-describedby="tarefa_titulo_helper_text" value={tituloTarefa} onChange={e => { setTituloTarefa(e.target.value); setErros({...erros, tituloTarefa: ''}); }} />
+              <FormHelperText id="tarefa_titulo_helper_text">{erros.tituloTarefa || 'Título da Tarefa.'}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid item xs={12}>  
-            <FormControl fullWidth>
-              <Input id="tarefa_descricao" aria-describedby="tarefa_descricao_helper_text" value={descricaoTarefa} onChange={e => { setDescricaoTarefa(e.target.value) }} />
-              <FormHelperText id="tarefa_descricao_helper_text">Descrição da Tarefa.</FormHelperText>
+            <FormControl fullWidth required error={!!erros.descricaoTarefa}>
+              <InputLabel htmlFor="tarefa_descricao">Descrição</InputLabel>
+              <Input id="tarefa_descricao" aria-describedby="tarefa_descricao_helper_text" value={descricaoTarefa} onChange={e => { setDescricaoTarefa(e.target.value); setErros({...erros, descricaoTarefa: ''}); }} />
+              <FormHelperText id="tarefa_descricao_helper_text">{erros.descricaoTarefa || 'Descrição da Tarefa.'}</FormHelperText>
             </FormControl>
           </Grid>
           <Grid container spacing={2} mt={1}>
@@ -123,8 +138,8 @@ const CriarTarefa = ({handleClose, tarefas, setTarefas}) =>{
               </FormControl>
             </Grid>
             <Grid item xs={3}>  
-              <FormControl fullWidth>
-                <InputLabel htmlFor="tarefa_recurso">Status</InputLabel>
+              <FormControl fullWidth required error={!!erros.statusTarefa}>
+                <InputLabel htmlFor="tarefa_status">Status</InputLabel>
                 <Select
                   id="tarefa_status"
                   value={statusTarefa}
@@ -140,6 +155,7 @@ const CriarTarefa = ({handleClose, tarefas, setTarefas}) =>{
                   <MenuItem value={'Em Andamento'}>Em Andamento</MenuItem>
                   <MenuItem value={'Concluída'}>Concluída</MenuItem>
                 </Select>
+                <FormHelperText id="tarefa_status_helper_text">{erros.statusTarefa || 'Status da Tarefa.'}</FormHelperText>
               </FormControl>
             </Grid>
             <Grid container spacing={2} pl={2} mt={2}>
